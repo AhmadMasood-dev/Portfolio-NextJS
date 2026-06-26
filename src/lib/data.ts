@@ -209,6 +209,18 @@ export const projects: Project[] = [
     image: '/projects/usepopcorn.png',
     category: ['React', 'API'],
   },
+  {
+    title: 'Zomato Clone',
+    description:
+      'A pixel-faithful frontend clone of Zomato, India\'s leading restaurant discovery platform. Recreates the location-aware hero search, curated collection cards, city-based browsing, chain restaurant directory, and mobile app download section.',
+    tech: ['HTML', 'CSS', 'Tailwind CSS'],
+    github: 'https://github.com/AhmadMasood-dev/zomato-clone',
+    live: 'https://zomato-clone-my.vercel.app/',
+    featured: false,
+    image: '/projects/zomato-clone.png',
+    screenshots: ['/projects/zomato-clone.png'],
+    category: ['HTML/CSS'],
+  },
 ]
 
 export const achievements: Achievement[] = [

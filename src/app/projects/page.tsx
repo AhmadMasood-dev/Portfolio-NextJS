@@ -9,12 +9,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SectionReveal } from '@/components/shared/section-reveal'
 import { EyebrowPill } from '@/components/shared/eyebrow-pill'
 import { ProjectThumbnail } from '@/components/shared/project-thumbnail'
+import { ScreenshotStrip } from '@/components/shared/screenshot-strip'
 import { SpotlightCard } from '@/components/shared/spotlight-card'
 import { projects } from '@/lib/data'
 
 const ease = [0.32, 0.72, 0, 1] as const
 
-const filters = ['All', 'React', 'Firebase', 'API']
+const filters = ['All', 'React', 'Firebase', 'API', 'HTML/CSS']
 
 export default function ProjectsPage() {
   const [active, setActive] = useState('All')
@@ -77,9 +78,15 @@ export default function ProjectsPage() {
                   <div className="h-full rounded-[1.5rem] border border-border bg-card p-1.5 ring-1 ring-black/4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/6 hover:ring-primary/20">
                     <div className="flex h-full flex-col rounded-[calc(1.5rem-0.375rem)] bg-card p-5">
 
-                      {/* Unique thumbnail per project */}
-                      <div className="mb-4 overflow-hidden rounded-xl border border-border/30 transition-transform duration-300 group-hover:scale-[1.02]">
-                        <ProjectThumbnail index={originalIndex} className="h-40 w-full" />
+                      {/* Screenshot strip or CSS thumbnail */}
+                      <div className="mb-4 overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-[1.02]">
+                        {project.screenshots?.length ? (
+                          <ScreenshotStrip src={project.screenshots[0]} alt={project.title} className="h-40" />
+                        ) : (
+                          <div className="border border-border/30 rounded-xl overflow-hidden">
+                            <ProjectThumbnail index={originalIndex} className="h-40 w-full" />
+                          </div>
+                        )}
                       </div>
 
                       {project.featured && (

@@ -38,6 +38,8 @@ export interface Project {
   live?: string
   featured: boolean
   image: string
+  /** Full-page screenshot paths — if present, shows 3-crop strip instead of CSS thumbnail */
+  screenshots?: string[]
   category: string[]
 }
 
