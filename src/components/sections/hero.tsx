@@ -6,6 +6,7 @@ import {
   useReducedMotion,
   useMotionValue,
   useSpring,
+  useTransform,
 } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,6 +32,21 @@ export function HeroSection() {
   const rawRotateY = useMotionValue(0);
   const rotateX = useSpring(rawRotateX, { stiffness: 180, damping: 22 });
   const rotateY = useSpring(rawRotateY, { stiffness: 180, damping: 22 });
+
+  /* ─── Reactive sheen & shadow from spring values ─── */
+  // Light reflection that moves with cursor
+  const sheenBg = useTransform(() => {
+    const rx = rotateX.get()
+    const ry = rotateY.get()
+    return `radial-gradient(circle at ${50 + ry * 5}% ${50 - rx * 5}%, rgba(255,255,255,0.22), transparent 55%)`
+  })
+
+  // Shadow shifts in the opposite direction of tilt
+  const dynamicShadow = useTransform(() => {
+    const rx = rotateX.get()
+    const ry = rotateY.get()
+    return `${ry * 5}px ${-rx * 5}px 60px rgba(0,0,0,0.28), 0 24px 80px rgba(234,129,22,0.14)`
+  })
 
   const handleTiltMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (shouldReduce || !photoRef.current) return;
@@ -229,25 +245,31 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* ─── Right column — photo card with 3D tilt ─── */}
+          {/* ─── Right column — true 3D profile stack ─── */}
           <div
             className="relative flex justify-center md:justify-end"
-            style={{ perspective: "900px" }}
+            style={{ perspective: "1000px" }}
           >
             <motion.div
               ref={photoRef}
-              initial={
-                shouldReduce ? false : { opacity: 0, x: 40, scale: 0.97 }
-              }
+              initial={shouldReduce ? false : { opacity: 0, x: 40, scale: 0.97 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.8, ease, delay: 0.35 }}
               onMouseMove={handleTiltMove}
               onMouseLeave={handleTiltLeave}
-              style={{ rotateX, rotateY }}
-              className="relative"
+              style={{
+                rotateX,
+                rotateY,
+                transformStyle: "preserve-3d",
+                boxShadow: dynamicShadow,
+              }}
+              className="relative rounded-[2rem]"
             >
-              {/* Main orange card */}
-              <div className="relative h-[420px] w-[320px] overflow-hidden rounded-[2rem] bg-primary sm:h-[480px] sm:w-[360px]">
+              {/* ── Layer 0 (Z=0): Main photo card ── */}
+              <div
+                className="relative h-[420px] w-[320px] overflow-hidden rounded-[2rem] bg-primary sm:h-[480px] sm:w-[360px]"
+                style={{ transform: "translateZ(0px)" }}
+              >
                 <Image
                   src="/profile.png"
                   alt="Ahmad Masood"
@@ -256,14 +278,26 @@ export function HeroSection() {
                   priority
                   sizes="(max-width: 768px) 320px, 360px"
                 />
+                {/* Cursor-reactive light sheen */}
+                <motion.div
+                  className="pointer-events-none absolute inset-0"
+                  style={{ background: sheenBg }}
+                  aria-hidden
+                />
+                {/* Subtle inner rim */}
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10"
+                  aria-hidden
+                />
               </div>
 
-              {/* Floating card — Based In */}
+              {/* ── Layer 1 (Z=50): "Based In" badge ── */}
               <motion.div
-                initial={shouldReduce ? false : { opacity: 0, x: -20, y: 10 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
+                initial={shouldReduce ? false : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, ease, delay: 0.9 }}
-                className="absolute left-0 top-1/3 -translate-x-1/4 rounded-2xl border border-border bg-background/95 px-4 py-3 shadow-xl backdrop-blur-sm md:-translate-x-1/3"
+                style={{ z: 50 }}
+                className="absolute left-0 top-1/3 -translate-x-1/4 rounded-2xl border border-border bg-background/95 px-4 py-3 shadow-2xl backdrop-blur-md md:-translate-x-1/3"
               >
                 <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Based In
@@ -273,14 +307,14 @@ export function HeroSection() {
                 </p>
               </motion.div>
 
-              {/* Floating card — MLSA */}
+              {/* ── Layer 2 (Z=70): MLSA badge ── */}
               <motion.div
-                initial={shouldReduce ? false : { opacity: 0, x: 20, y: 10 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
+                initial={shouldReduce ? false : { opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, ease, delay: 1.05 }}
-                className="absolute bottom-6 right-0 translate-x-1/4 flex items-center gap-2.5 rounded-2xl border border-border bg-background/95 px-3 py-2.5 shadow-xl backdrop-blur-sm md:translate-x-1/3"
+                style={{ z: 70 }}
+                className="absolute bottom-6 right-0 translate-x-1/4 flex items-center gap-2.5 rounded-2xl border border-border bg-background/95 px-3 py-2.5 shadow-2xl backdrop-blur-md md:translate-x-1/3"
               >
-                {/* Microsoft logo */}
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0078D4]">
                   <svg viewBox="0 0 21 21" className="h-4 w-4" fill="none">
                     <path d="M1 1h9v9H1z" fill="#F25022" />
@@ -290,14 +324,32 @@ export function HeroSection() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-bold leading-none text-foreground">
-                    MLSA
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    Microsoft &apos;24
-                  </p>
+                  <p className="text-sm font-bold leading-none text-foreground">MLSA</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Microsoft &apos;24</p>
                 </div>
               </motion.div>
+
+              {/* ── Layer 3 (Z=90): "Open to work" chip ── */}
+              <motion.div
+                initial={shouldReduce ? false : { opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease, delay: 1.2 }}
+                style={{ z: 90 }}
+                className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/95 px-3 py-1.5 shadow-lg backdrop-blur-md"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-700">Open to work</span>
+              </motion.div>
+
+              {/* ── Z=-20: Depth glow behind the card ── */}
+              <div
+                className="pointer-events-none absolute inset-4 -z-10 rounded-[2rem] bg-primary/30 blur-2xl"
+                style={{ transform: "translateZ(-20px)" }}
+                aria-hidden
+              />
             </motion.div>
           </div>
         </div>
